@@ -14,31 +14,41 @@
 }
 body{background:var(--bg);color:var(--white);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:20px 16px}
 
-#keyGate{max-width:520px;margin:60px auto;text-align:center}
-#keyGate h1{font-size:38px;font-weight:800;letter-spacing:2px;color:var(--white);margin-bottom:6px}
-#keyGate .sub{font-size:11px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
-#keyGate .tagline{font-size:13px;color:var(--lg);margin-bottom:28px;line-height:1.6}
-#keyGate .card{background:var(--card);border:1px solid #1A2840;border-radius:16px;padding:28px 24px}
-#keyGate label{display:block;font-size:11px;color:var(--lg);margin-bottom:8px;text-align:left;letter-spacing:2px;text-transform:uppercase}
-#keyGate input{width:100%;background:#0A1220;border:1px solid #1A2840;border-radius:10px;padding:12px 14px;color:var(--white);font-size:14px;font-family:monospace;outline:none;margin-bottom:12px;transition:border-color .2s}
+#keyGate{max-width:540px;margin:50px auto;text-align:center}
+#keyGate .logo{width:80px;border-radius:18px;margin-bottom:14px}
+#keyGate h1{font-size:36px;font-weight:800;letter-spacing:2px;margin-bottom:4px}
+#keyGate .sub{font-size:11px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;margin-bottom:6px}
+#keyGate .tagline{font-size:13px;color:var(--lg);margin-bottom:24px;line-height:1.6}
+#keyGate .card{background:var(--card);border:1px solid #1A2840;border-radius:16px;padding:24px 22px;text-align:left}
+
+/* Provider tabs */
+.provider-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:18px}
+.ptab{background:#0A1220;border:1px solid #1A2840;border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s}
+.ptab:hover{border-color:var(--cyan)}
+.ptab.active{border-color:var(--cyan);background:#0D1E30}
+.ptab .picon{font-size:18px;margin-bottom:4px}
+.ptab .pname{font-size:11px;font-weight:700;color:var(--white)}
+.ptab .pfree{font-size:9px;color:var(--green);margin-top:2px}
+
+#keyGate label{display:block;font-size:11px;color:var(--lg);margin-bottom:7px;letter-spacing:2px;text-transform:uppercase}
+#keyGate input{width:100%;background:#0A1220;border:1px solid #1A2840;border-radius:10px;padding:11px 14px;color:var(--white);font-size:13px;font-family:monospace;outline:none;margin-bottom:10px;transition:border-color .2s}
 #keyGate input:focus{border-color:var(--cyan)}
-#keyGate .hint{font-size:11px;color:var(--gray);text-align:left;margin-bottom:20px;line-height:1.7}
-#keyGate .hint a{color:var(--cyan);text-decoration:none}
-#keyGate .hint a:hover{text-decoration:underline}
-#keyGate .btn-go{width:100%;background:var(--cyan);color:var(--bg);border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
-#keyGate .btn-go:hover{opacity:.85}
-#keyGate .err{font-size:12px;color:var(--red);margin-top:10px;display:none}
-#keyGate .footer-note{margin-top:20px;font-size:11px;color:var(--gray)}
-#keyGate .footer-note a{color:var(--lg);text-decoration:none}
+.hint{font-size:11px;color:var(--gray);margin-bottom:18px;line-height:1.7}
+.hint a{color:var(--cyan);text-decoration:none}
+.hint a:hover{text-decoration:underline}
+.btn-go{width:100%;background:var(--cyan);color:var(--bg);border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-go:hover{opacity:.85}
+.err{font-size:12px;color:var(--red);margin-top:8px;display:none;text-align:center}
+.footer-note{margin-top:18px;font-size:11px;color:var(--gray);text-align:center}
+.footer-note a{color:var(--lg);text-decoration:none}
 
 #app{display:none;max-width:1100px;margin:0 auto}
-
-header{text-align:center;margin-bottom:20px}
-header .eyebrow{font-size:11px;letter-spacing:4px;color:var(--cyan);text-transform:uppercase;margin-bottom:6px}
-header h2{font-size:24px;font-weight:700;margin-bottom:4px}
+header{text-align:center;margin-bottom:18px}
+header .eyebrow{font-size:11px;letter-spacing:4px;color:var(--cyan);text-transform:uppercase;margin-bottom:5px}
+header h2{font-size:22px;font-weight:700;margin-bottom:3px}
 header p{font-size:12px;color:var(--lg)}
 
-.topic-row{display:flex;gap:10px;margin-bottom:18px}
+.topic-row{display:flex;gap:10px;margin-bottom:16px}
 .topic-row input{flex:1;background:var(--card);border:1px solid #1A2840;border-radius:10px;padding:11px 14px;color:var(--white);font-size:14px;outline:none;transition:border-color .2s}
 .topic-row input:focus{border-color:var(--cyan)}
 .topic-row input:disabled{opacity:.5}
@@ -48,18 +58,16 @@ header p{font-size:12px;color:var(--lg)}
 .btn-start{background:var(--cyan);color:var(--bg)}
 .btn-reset{background:transparent;color:var(--red);border:1px solid var(--red)!important;font-weight:600}
 
-.rounds{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:16px;font-size:12px;color:var(--gray)}
+.rounds{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:14px;font-size:12px;color:var(--gray)}
 .dot{width:9px;height:9px;border-radius:50%;background:#1A2840;transition:background .3s}
-.dot.active{background:var(--cyan)}
-.dot.done{background:var(--green)}
+.dot.active{background:var(--cyan)}.dot.done{background:var(--green)}
 
 .agents{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
 .agent{background:var(--card);border-radius:14px;border:1px solid #1A2840;overflow:hidden;display:flex;flex-direction:column;transition:border-color .3s}
 .agent.thinking{border-color:var(--cyan)}
 .agent-head{padding:11px 14px 9px;border-bottom:1px solid #1A2840;display:flex;align-items:center;gap:10px}
 .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.aname{font-size:13px;font-weight:700}
-.arole{font-size:11px;color:var(--lg);margin-top:1px}
+.aname{font-size:13px;font-weight:700}.arole{font-size:11px;color:var(--lg);margin-top:1px}
 .badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;margin-left:auto;flex-shrink:0}
 .agent-body{padding:13px;flex:1;min-height:160px;max-height:320px;overflow-y:auto;font-size:13px;line-height:1.65;color:var(--lg)}
 .agent-body .empty{color:var(--gray);font-style:italic}
@@ -92,13 +100,13 @@ header p{font-size:12px;color:var(--lg)}
 .running-bar{text-align:center;font-size:13px;color:var(--lg);margin-bottom:14px}
 .done-bar{text-align:center;padding:16px 0}
 .done-bar p{font-size:14px;color:var(--green);margin-bottom:12px}
-
 .key-info{font-size:11px;color:var(--gray);text-align:right;margin-bottom:10px;cursor:pointer}
 .key-info:hover{color:var(--red)}
-
-.site-footer{text-align:center;margin-top:30px;padding-top:20px;border-top:1px solid #1A2840;font-size:12px;color:var(--gray)}
+.site-footer{text-align:center;margin-top:28px;padding-top:18px;border-top:1px solid #1A2840;font-size:12px;color:var(--gray)}
 .site-footer a{color:var(--cyan);text-decoration:none;font-weight:600}
-.site-footer a:hover{text-decoration:underline}
+
+.provider-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--gray);margin-bottom:12px}
+.provider-badge span{color:var(--cyan);font-weight:600}
 
 @keyframes bounce{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1.1);opacity:1}}
 </style>
@@ -106,27 +114,51 @@ header p{font-size:12px;color:var(--lg)}
 <body>
 
 <div id="keyGate">
+  <img src="maya_icon_on_012731.png" class="logo" alt="Maya AI">
   <div class="sub">Maya AI</div>
   <h1>AI Brainstorm</h1>
   <div class="tagline">Three AI agents debate any topic.<br>You steer the discussion.</div>
+
   <div class="card">
-    <label>Anthropic API Key</label>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" />
-    <div class="hint">
-      Your key stays in the browser — it is never sent anywhere except directly to Anthropic.<br>
-      No key yet? <a href="https://console.anthropic.com" target="_blank">Get one free at console.anthropic.com</a> — $5 credit on signup.<br>
-      One full brainstorm session (5 rounds) costs roughly $0.30–0.50.
+    <label>Choose your AI provider</label>
+    <div class="provider-tabs">
+      <div class="ptab active" onclick="selectProvider('anthropic')" id="tab-anthropic">
+        <div class="picon">🤖</div>
+        <div class="pname">Claude</div>
+        <div class="pfree">Anthropic</div>
+      </div>
+      <div class="ptab" onclick="selectProvider('openai')" id="tab-openai">
+        <div class="picon">⚡</div>
+        <div class="pname">GPT-4o</div>
+        <div class="pfree">OpenAI</div>
+      </div>
+      <div class="ptab" onclick="selectProvider('groq')" id="tab-groq">
+        <div class="picon">🚀</div>
+        <div class="pname">Groq</div>
+        <div class="pfree" style="color:var(--green)">FREE tier</div>
+      </div>
+      <div class="ptab" onclick="selectProvider('deepseek')" id="tab-deepseek">
+        <div class="picon">🐋</div>
+        <div class="pname">DeepSeek</div>
+        <div class="pfree">China</div>
+      </div>
     </div>
+
+    <label id="keyLabel">API Key</label>
+    <input type="password" id="apiKeyInput" placeholder="" autocomplete="off" />
+    <div class="hint" id="keyHint"></div>
     <button class="btn-go" onclick="enterApp()">Start →</button>
-    <div class="err" id="keyErr">Please enter a valid API key (starts with sk-ant-)</div>
+    <div class="err" id="keyErr">Please enter a valid API key</div>
   </div>
+
   <div class="footer-note">
     Built by <a href="https://maya-ai.tech" target="_blank">maya-ai.tech</a> &nbsp;·&nbsp; Patent pending UPRP 2026
   </div>
 </div>
 
 <div id="app">
-  <div class="key-info" id="keyInfo" onclick="changeKey()">🔑 Change API key</div>
+  <div class="key-info" onclick="changeKey()">🔑 Change provider / key</div>
+  <div class="provider-badge">Using: <span id="providerLabel"></span></div>
 
   <header>
     <div class="eyebrow">Maya AI · Brainstorm</div>
@@ -135,18 +167,15 @@ header p{font-size:12px;color:var(--lg)}
   </header>
 
   <div class="topic-row">
-    <input type="text" id="topicInput" value="?" placeholder="Enter a topic..." />
+    <input type="text" id="topicInput" value="" placeholder="Enter any topic in any language..." />
     <button class="btn btn-start" id="btnStart" onclick="start()">Run</button>
     <button class="btn btn-reset" id="btnReset" onclick="reset()" style="display:none">Reset</button>
   </div>
 
   <div class="rounds" id="roundsBar" style="display:none">
     <span>Round</span>
-    <div class="dot" id="d0"></div>
-    <div class="dot" id="d1"></div>
-    <div class="dot" id="d2"></div>
-    <div class="dot" id="d3"></div>
-    <div class="dot" id="d4"></div>
+    <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div>
     <span id="roundLabel" style="color:var(--cyan);font-weight:600"></span>
   </div>
 
@@ -155,7 +184,7 @@ header p{font-size:12px;color:var(--lg)}
   <div id="founderBox" style="display:none" class="founder-box">
     <div class="founder-head">⭐ YOUR COMMENT — optional, agents will prioritize it in the next round</div>
     <div class="founder-inner">
-      <textarea id="founderNote" placeholder="Steer the debate, add a constraint, challenge an idea... (or leave empty and hit →)"></textarea>
+      <textarea id="founderNote" placeholder="Steer the debate, add a constraint, challenge an idea..."></textarea>
       <button class="btn-next" id="btnNext" onclick="nextRound()">→ Next round</button>
     </div>
     <div class="founder-history" id="founderHistory"></div>
@@ -182,57 +211,136 @@ header p{font-size:12px;color:var(--lg)}
 </div>
 
 <script>
+const PROVIDERS = {
+  anthropic: {
+    name: "Claude (Anthropic)",
+    placeholder: "sk-ant-api03-...",
+    hint: `Your key stays in the browser — never sent anywhere except Anthropic.<br>No key? <a href="https://console.anthropic.com" target="_blank">Get $5 free at console.anthropic.com</a>`,
+    validate: k => k.startsWith('sk-'),
+    call: async (apiKey, system, messages) => {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:800, system, messages})
+      });
+      const d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      return d.content.map(c=>c.text||'').join('');
+    }
+  },
+  openai: {
+    name: "GPT-4o (OpenAI)",
+    placeholder: "sk-...",
+    hint: `Your key stays in the browser — never sent anywhere except OpenAI.<br>No key? <a href="https://platform.openai.com" target="_blank">Get one at platform.openai.com</a>`,
+    validate: k => k.startsWith('sk-'),
+    call: async (apiKey, system, messages) => {
+      const msgs = [{role:'system',content:system}, ...messages];
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({model:'gpt-4o', max_tokens:800, messages:msgs})
+      });
+      const d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      return d.choices[0].message.content;
+    }
+  },
+  groq: {
+    name: "Groq (Free tier)",
+    placeholder: "gsk_...",
+    hint: `Groq has a FREE tier — fast and generous limits.<br>No key? <a href="https://console.groq.com" target="_blank">Get free key at console.groq.com</a>`,
+    validate: k => k.startsWith('gsk_'),
+    call: async (apiKey, system, messages) => {
+      const msgs = [{role:'system',content:system}, ...messages];
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({model:'llama-3.3-70b-versatile', max_tokens:800, messages:msgs})
+      });
+      const d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      return d.choices[0].message.content;
+    }
+  },
+  deepseek: {
+    name: "DeepSeek",
+    placeholder: "sk-...",
+    hint: `DeepSeek — powerful Chinese AI, very affordable.<br>No key? <a href="https://platform.deepseek.com" target="_blank">Get one at platform.deepseek.com</a>`,
+    validate: k => k.startsWith('sk-'),
+    call: async (apiKey, system, messages) => {
+      const msgs = [{role:'system',content:system}, ...messages];
+      const res = await fetch('https://api.deepseek.com/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({model:'deepseek-chat', max_tokens:800, messages:msgs})
+      });
+      const d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      return d.choices[0].message.content;
+    }
+  }
+};
+
 const AGENTS = [
-  { name:"Visionary", icon:"🔭", role:"Scale · ambition · the future",
-    color:"#00D4FF", bg:"rgba(0,212,255,.12)",
-    system:`You are the Visionary in a brainstorm. Your role: think big, ambitious, 5–10 year horizon. Focus on scale, impact, and long-term potential.
-CRITICAL: Always respond in the SAME LANGUAGE as the topic/question. If the topic is in Russian — respond in Russian. If in English — respond in English. If in another language — use that language.
-If there is a user comment marked ⭐ — prioritize it above all else.
-3–4 paragraphs. No filler openers like "Great question!". Get straight to the point.` },
-  { name:"Pragmatist", icon:"⚙️", role:"Realism · numbers · timelines",
-    color:"#00E5A0", bg:"rgba(0,229,160,.12)",
-    system:`You are the Pragmatist in a brainstorm. Your role: realism, concrete numbers, practical steps for the next 12–18 months. Focus on what can actually be done with limited resources.
-CRITICAL: Always respond in the SAME LANGUAGE as the topic/question. If the topic is in Russian — respond in Russian. If in English — respond in English. If in another language — use that language.
-If there is a user comment marked ⭐ — prioritize it above all else.
-3–4 paragraphs. No filler openers. Get straight to the point.` },
-  { name:"Skeptic", icon:"🔍", role:"Risks · blind spots · hard questions",
-    color:"#FF9500", bg:"rgba(255,149,0,.12)",
-    system:`You are the Skeptic in a brainstorm. Your role: find risks, blind spots, uncomfortable questions. Do NOT criticize for its own sake — always suggest how to reduce each risk.
-CRITICAL: Always respond in the SAME LANGUAGE as the topic/question. If the topic is in Russian — respond in Russian. If in English — respond in English. If in another language — use that language.
-If there is a user comment marked ⭐ — prioritize it above all else.
-3–4 paragraphs. No filler openers. Get straight to the point.` }
+  { name:"Visionary", icon:"🔭", role:"Scale · ambition · the future", color:"#00D4FF", bg:"rgba(0,212,255,.12)",
+    system:`You are the Visionary in a brainstorm. Your role: think big, ambitious, 5–10 year horizon. Focus on scale, impact, long-term potential.
+CRITICAL: Always respond in the SAME LANGUAGE as the topic. Russian topic → Russian answer. English → English. Any language → same language.
+If there is a comment marked ⭐ — address it first.
+3–4 paragraphs. No filler openers. Straight to the point.` },
+  { name:"Pragmatist", icon:"⚙️", role:"Realism · numbers · timelines", color:"#00E5A0", bg:"rgba(0,229,160,.12)",
+    system:`You are the Pragmatist in a brainstorm. Your role: realism, concrete numbers, practical steps for next 12–18 months.
+CRITICAL: Always respond in the SAME LANGUAGE as the topic. Russian topic → Russian answer. English → English. Any language → same language.
+If there is a comment marked ⭐ — address it first.
+3–4 paragraphs. No filler openers. Straight to the point.` },
+  { name:"Skeptic", icon:"🔍", role:"Risks · blind spots · hard questions", color:"#FF9500", bg:"rgba(255,149,0,.12)",
+    system:`You are the Skeptic in a brainstorm. Your role: find risks, blind spots, hard questions. Do NOT just criticize — suggest how to reduce each risk.
+CRITICAL: Always respond in the SAME LANGUAGE as the topic. Russian topic → Russian answer. English → English. Any language → same language.
+If there is a comment marked ⭐ — address it first.
+3–4 paragraphs. No filler openers. Straight to the point.` }
 ];
 
-const MAX = 5;
-const SL = {idle:"waiting", thinking:"thinking...", done:"done", error:"error"};
-const SC = {idle:"#6B7A8D", thinking:"#00D4FF", done:"#00E5A0", error:"#FF4455"};
-
-let apiKey="", round=0, running=false;
+const MAX=5;
+const SL={idle:"waiting",thinking:"thinking...",done:"done",error:"error"};
+const SC={idle:"#6B7A8D",thinking:"#00D4FF",done:"#00E5A0",error:"#FF4455"};
+let apiKey="", provider="anthropic", round=0, running=false;
 let history=[[],[],[]], prevReplies=[], founderHistory=[];
+
+function selectProvider(p) {
+  provider = p;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+p).classList.add('active');
+  const prov = PROVIDERS[p];
+  document.getElementById('apiKeyInput').placeholder = prov.placeholder;
+  document.getElementById('keyHint').innerHTML = prov.hint;
+}
 
 function enterApp() {
   const k = document.getElementById('apiKeyInput').value.trim();
   const err = document.getElementById('keyErr');
-  if (!k.startsWith('sk-')) { err.style.display='block'; return; }
+  if(!PROVIDERS[provider].validate(k)) { err.style.display='block'; return; }
   err.style.display='none'; apiKey=k;
+  document.getElementById('providerLabel').textContent = PROVIDERS[provider].name;
   document.getElementById('keyGate').style.display='none';
   document.getElementById('app').style.display='block';
   buildCards();
 }
+
 function changeKey() {
-  if (confirm('Change API key? Current session will be reset.')) {
+  if(confirm('Change provider / key? Session will be reset.')) {
     reset(); apiKey='';
     document.getElementById('apiKeyInput').value='';
     document.getElementById('app').style.display='none';
     document.getElementById('keyGate').style.display='block';
   }
 }
+
 document.getElementById('apiKeyInput').addEventListener('keydown', e=>{ if(e.key==='Enter') enterApp(); });
+selectProvider('anthropic');
 
 function buildCards() {
-  const g = document.getElementById('agentsGrid'); g.innerHTML='';
-  AGENTS.forEach((a,i) => {
-    g.innerHTML += `<div class="agent" id="agent${i}">
+  const g=document.getElementById('agentsGrid'); g.innerHTML='';
+  AGENTS.forEach((a,i)=>{
+    g.innerHTML+=`<div class="agent" id="agent${i}">
       <div class="agent-head">
         <div class="avatar" style="background:${a.bg}">${a.icon}</div>
         <div style="flex:1;min-width:0"><div class="aname">${a.name}</div><div class="arole">${a.role}</div></div>
@@ -243,29 +351,17 @@ function buildCards() {
   });
 }
 
-async function callClaude(system, messages) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:800, system, messages})
-  });
-  const d = await res.json();
-  if (d.error) throw new Error(d.error.message);
-  return d.content.map(c=>c.text||'').join('');
+async function callAI(system, messages) {
+  return PROVIDERS[provider].call(apiKey, system, messages);
 }
 
-function setStatus(i,s) {
+function setStatus(i,s){
   const b=document.getElementById(`badge${i}`);
   b.textContent=SL[s]; b.style.color=SC[s];
   document.getElementById(`agent${i}`).className='agent'+(s==='thinking'?' thinking':'');
 }
 
-function appendMsg(i, text, r, isFounder) {
+function appendMsg(i,text,r,isFounder){
   const body=document.getElementById(`body${i}`);
   const empty=body.querySelector('.empty'); if(empty) empty.remove();
   const wrap=document.createElement('div'); wrap.className='msg';
@@ -279,84 +375,67 @@ function appendMsg(i, text, r, isFounder) {
   body.appendChild(wrap); body.scrollTop=body.scrollHeight;
 }
 
-function showDots(parentId, color) {
+function showDots(parentId,color){
   const el=document.getElementById(parentId); el.innerHTML='';
-  [0,1,2].forEach((_,j)=>{
-    const s=document.createElement('span');
-    s.style.cssText=`background:${color};animation:bounce 1.2s ${j*.2}s infinite`;
-    el.appendChild(s);
-  });
+  [0,1,2].forEach((_,j)=>{const s=document.createElement('span');s.style.cssText=`background:${color};animation:bounce 1.2s ${j*.2}s infinite`;el.appendChild(s);});
 }
 
-function showAgentThinking(i) {
+function showAgentThinking(i){
   const body=document.getElementById(`body${i}`);
   const d=document.createElement('div'); d.id=`th${i}`; d.className='dots';
-  [0,1,2].forEach((_,j)=>{
-    const s=document.createElement('span');
-    s.style.cssText=`background:${AGENTS[i].color};animation:bounce 1.2s ${j*.2}s infinite`;
-    d.appendChild(s);
-  });
+  [0,1,2].forEach((_,j)=>{const s=document.createElement('span');s.style.cssText=`background:${AGENTS[i].color};animation:bounce 1.2s ${j*.2}s infinite`;d.appendChild(s);});
   body.appendChild(d); body.scrollTop=body.scrollHeight;
 }
-function hideAgentThinking(i){ const e=document.getElementById(`th${i}`); if(e) e.remove(); }
+function hideAgentThinking(i){const e=document.getElementById(`th${i}`); if(e) e.remove();}
 
-async function runAgent(i, prompt, r, isFounder) {
+async function runAgent(i,prompt,r,isFounder){
   setStatus(i,'thinking'); showAgentThinking(i);
   history[i]=[...history[i],{role:'user',content:prompt}];
-  try {
-    const reply=await callClaude(AGENTS[i].system, history[i]);
+  try{
+    const reply=await callAI(AGENTS[i].system, history[i]);
     hideAgentThinking(i);
     history[i]=[...history[i],{role:'assistant',content:reply}];
-    appendMsg(i, reply, r, isFounder);
+    appendMsg(i,reply,r,isFounder);
     setStatus(i,'done'); return reply;
-  } catch(e) {
+  }catch(e){
     hideAgentThinking(i);
-    appendMsg(i,'Error: '+e.message, r, isFounder);
+    appendMsg(i,'Error: '+e.message,r,isFounder);
     setStatus(i,'error'); return '';
   }
 }
 
-async function runSynthesis(topic, replies, r, founderComment) {
+async function runSynthesis(topic,replies,r,founderComment){
   const box=document.getElementById('synthBox');
   const body=document.getElementById('synthBody');
   box.style.display='block';
   const d=document.createElement('div'); d.id='synthTh'; d.className='dots';
   [0,1,2].forEach((_,j)=>{const s=document.createElement('span');s.style.cssText=`background:#7B61FF;animation:bounce 1.2s ${j*.2}s infinite`;d.appendChild(s);});
   body.appendChild(d);
-
-  const fPart=founderComment?`\n\nFounder's comment: "${founderComment}"`:'';
-  const prompt=`Round ${r}. Topic: "${topic}"${fPart}\n\nVisionary: ${replies[0]}\n\nPragmatist: ${replies[1]}\n\nSkeptic: ${replies[2]}\n\nSynthesize: 3–4 key ideas from this round. Be brief. IMPORTANT: respond in the same language as the topic.`;
-  try {
-    const result=await callClaude('You are a brainstorm moderator. Synthesize key ideas concisely.',[{role:'user',content:prompt}]);
+  const fPart=founderComment?`\n\nUser's comment: "${founderComment}"`:'';
+  const prompt=`Round ${r}. Topic: "${topic}"${fPart}\n\nVisionary: ${replies[0]}\n\nPragmatist: ${replies[1]}\n\nSkeptic: ${replies[2]}\n\nSynthesize: 3–4 key ideas. Brief. CRITICAL: respond in the same language as the topic.`;
+  try{
+    const result=await callAI('You are a brainstorm moderator. Synthesize key ideas concisely.',[{role:'user',content:prompt}]);
     const el=document.getElementById('synthTh'); if(el) el.remove();
     const wrap=document.createElement('div'); wrap.className='synth-round';
     const lbl=document.createElement('div'); lbl.className='synth-rlabel';
     lbl.style.color=founderComment?'var(--gold)':'var(--gray)';
     lbl.textContent=(founderComment?'⭐ ':'')+'Round '+r;
     wrap.appendChild(lbl);
-    if(founderComment){
-      const fn=document.createElement('div'); fn.className='synth-founder-note';
-      fn.textContent='Your comment: «'+founderComment+'»'; wrap.appendChild(fn);
-    }
-    result.trim().split('\n').filter(p=>p.trim()).forEach(t=>{
-      const p=document.createElement('p'); p.textContent=t; wrap.appendChild(p);
-    });
+    if(founderComment){const fn=document.createElement('div');fn.className='synth-founder-note';fn.textContent='Your comment: «'+founderComment+'»';wrap.appendChild(fn);}
+    result.trim().split('\n').filter(p=>p.trim()).forEach(t=>{const p=document.createElement('p');p.textContent=t;wrap.appendChild(p);});
     body.appendChild(wrap);
-  } catch(e) {
+  }catch(e){
     const el=document.getElementById('synthTh'); if(el) el.remove();
     const p=document.createElement('p'); p.textContent='Synthesis error: '+e.message; body.appendChild(p);
   }
 }
 
-function updateDots() {
-  for(let i=0;i<MAX;i++){
-    const d=document.getElementById('d'+i); if(!d) continue;
-    d.className='dot'+(i+1<round?' done':i+1===round?' active':'');
-  }
+function updateDots(){
+  for(let i=0;i<MAX;i++){const d=document.getElementById('d'+i);if(!d)continue;d.className='dot'+(i+1<round?' done':i+1===round?' active':'');}
   document.getElementById('roundLabel').textContent=round+' / '+MAX;
 }
 
-async function start() {
+async function start(){
   if(running) return;
   const topic=document.getElementById('topicInput').value.trim(); if(!topic) return;
   running=true; round=1;
@@ -367,61 +446,40 @@ async function start() {
   updateDots();
   document.getElementById('runningBar').style.display='block';
   showDots('globalDots','#00D4FF');
-
   const prompt=`Topic: "${topic}"\n\nRound 1. Share your initial position.`;
   const replies=await Promise.all(AGENTS.map((_,i)=>runAgent(i,prompt,1,false)));
   prevReplies=replies;
   await runSynthesis(topic,replies,1,'');
-
   document.getElementById('runningBar').style.display='none';
-  if(round<MAX){
-    document.getElementById('founderBox').style.display='block';
-    document.getElementById('btnNext').disabled=false;
-  } else {
-    document.getElementById('doneBar').style.display='block';
-  }
+  if(round<MAX){document.getElementById('founderBox').style.display='block';document.getElementById('btnNext').disabled=false;}
+  else{document.getElementById('doneBar').style.display='block';}
   running=false;
 }
 
-async function nextRound() {
+async function nextRound(){
   if(running||round>=MAX) return;
   const topic=document.getElementById('topicInput').value.trim();
   const comment=document.getElementById('founderNote').value.trim();
   running=true;
   document.getElementById('founderBox').style.display='none';
   document.getElementById('btnNext').disabled=true;
-
-  if(comment){
-    founderHistory.push({round,text:comment});
-    const fh=document.getElementById('founderHistory');
-    const d=document.createElement('div');
-    d.innerHTML=`<span>Round ${round}:</span> ${comment}`; fh.appendChild(d);
-  }
-
+  if(comment){founderHistory.push({round,text:comment});const fh=document.getElementById('founderHistory');const d=document.createElement('div');d.innerHTML=`<span>Round ${round}:</span> ${comment}`;fh.appendChild(d);}
   round++; updateDots();
   document.getElementById('runningBar').style.display='block';
   showDots('globalDots','#00D4FF');
-
-  const fPart=comment?`\n\n⭐ FOUNDER'S COMMENT (top priority): "${comment}"\nMake sure to address this in your response.`:'';
-  const prompt=`Round ${round}. Topic: "${topic}"${fPart}\n\nWhat others said in round ${round-1}:\nVisionary: ${prevReplies[0]}\nPragmatist: ${prevReplies[1]}\nSkeptic: ${prevReplies[2]}\n\nReact to their ideas and the founder's comment. Don't repeat what's already been said.`;
-
+  const fPart=comment?`\n\n⭐ USER COMMENT (top priority): "${comment}"\nAddress this in your response.`:'';
+  const prompt=`Round ${round}. Topic: "${topic}"${fPart}\n\nWhat others said in round ${round-1}:\nVisionary: ${prevReplies[0]}\nPragmatist: ${prevReplies[1]}\nSkeptic: ${prevReplies[2]}\n\nReact to their ideas. Don't repeat what's already been said.`;
   const replies=await Promise.all(AGENTS.map((_,i)=>runAgent(i,prompt,round,!!comment)));
   prevReplies=replies;
   await runSynthesis(topic,replies,round,comment);
-
   document.getElementById('founderNote').value='';
   document.getElementById('runningBar').style.display='none';
-
-  if(round<MAX){
-    document.getElementById('founderBox').style.display='block';
-    document.getElementById('btnNext').disabled=false;
-  } else {
-    document.getElementById('doneBar').style.display='block';
-  }
+  if(round<MAX){document.getElementById('founderBox').style.display='block';document.getElementById('btnNext').disabled=false;}
+  else{document.getElementById('doneBar').style.display='block';}
   running=false;
 }
 
-function reset() {
+function reset(){
   round=0; running=false; history=[[],[],[]]; prevReplies=[]; founderHistory=[];
   document.getElementById('topicInput').value='';
   document.getElementById('topicInput').disabled=false;
