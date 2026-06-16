@@ -1525,14 +1525,22 @@ ${context ? '\nУточнения от пользователя:\n'+context : ''
 async function preRoundQuestions(task, draft, roundNum){
   const analyst = agentSlots[0];
   showThinkingBar('Агент думает что уточнить перед раундом '+roundNum+'...');
-  const up = 'Вопрос: "'+task+'". Текущий черновик ответа: '+draft.substring(0,2000)+' . Перед тем как критиковать — реши, нужно ли спросить что-то у пользователя чтобы критика была точной. Если в черновике есть неясности которые только пользователь может прояснить (бюджет, приоритеты, ограничения, контекст) — задай 2-3 коротких вопроса. Если всё ясно — верни пустой список. JSON: {"ask":true/false,"questions":["..."]}. Только JSON.';
+  // Вся история уже заданного — чтобы не повторяться
+  const askedBefore = (window._askedQuestions||[]).join('\n');
+  const ctxSoFar = window._lastContext || '';
+  const historyBlock = (askedBefore || ctxSoFar)
+    ? '\n\nУЖЕ СПРОШЕНО И ОТВЕЧЕНО РАНЕЕ (НЕ ПОВТОРЯЙ эти вопросы и не спрашивай то что уже известно):\n'+askedBefore+'\n'+ctxSoFar
+    : '';
+  const up = 'Вопрос: "'+task+'". Текущий черновик ответа: '+draft.substring(0,2000)+historyBlock+'\n\nПеред тем как критиковать — реши, нужно ли спросить НОВОЕ у пользователя чтобы критика была точной. Спрашивай ТОЛЬКО то о чём ещё НЕ спрашивал и чего НЕТ в истории выше. Если новых неясностей нет — верни ask:false. JSON: {"ask":true/false,"questions":["..."]}. Только JSON.';
   try{
     const raw = await callModel(analyst.modelId,
-      'Ты аналитик-модератор. Решаешь нужно ли вовлечь пользователя. '+getToneInstruction()+' Только валидный JSON.',
+      'Ты аналитик-модератор. Решаешь нужно ли вовлечь пользователя. Никогда не повторяй уже заданные вопросы. '+getToneInstruction()+' Только валидный JSON.',
       up);
     removeThinkingBar();
     const p = JSON.parse(raw.replace(/```json|```/g,'').trim());
     if(!p.ask || !p.questions || !p.questions.length) return '';
+    // Запоминаем что спросили
+    window._askedQuestions = (window._askedQuestions||[]).concat(p.questions);
     return await showPreRoundQuestions(p.questions, roundNum);
   }catch(e){
     removeThinkingBar();
@@ -1623,6 +1631,15 @@ function renderFinalAnswer(task, finalText){
   document.getElementById('treeEmpty').style.display='none';
   const list=document.getElementById('pathsList');
   list.style.display='flex';
+
+  // Кнопка слева становится «→ Архитект»
+  const blA=document.getElementById('btnLaunch');
+  if(blA){
+    blA.textContent='→ '+((LANG[currentLang]||LANG.ru).tab_architect||'Архитект');
+    blA.onclick=()=>goToArchitect();
+    blA.style.display='block';
+  }
+
   const card=document.createElement('div');
   card.style.cssText='background:linear-gradient(135deg,#2D1B6B,#6B4FCC);border:none;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(107,79,204,0.3)';
   card.innerHTML='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
@@ -1662,6 +1679,23 @@ function renderDraftVersion(version, text, author){
 
 function escHtmlSafe(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+// Делает читаемое имя файла из задачи: "Архитектура голосового помощника" → "maya_arhitektura-golosovogo-pomoshnika_2026-06-16"
+function makeFileName(prefix){
+  const task = (window._genTask || window._currentTask || '').trim();
+  // Берём первые 6 значимых слов
+  let slug = task
+    .replace(/^(реализовать решение|создать|сделать|разработать)[:\s]*/i,'')
+    .substring(0,60)
+    .replace(/[^\wа-яёА-ЯЁ\s-]/gi,'')
+    .trim()
+    .replace(/\s+/g,'-')
+    .toLowerCase();
+  if(!slug) slug='document';
+  const d = new Date();
+  const date = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return (prefix||'maya')+'_'+slug+'_'+date;
+}
+
 // ── MAIN LAUNCH (Brainstorm = patent cycle) ──
 function waitForUserComment(nextRound){
   return new Promise(resolve=>{
@@ -1698,7 +1732,13 @@ async function launch(){
   document.getElementById('chatArea').innerHTML='';
   document.getElementById('centerTitle').textContent=task.length>50?task.substring(0,50)+'...':task;
   draftVersions=[];
+  window._askedQuestions=[];
+  // Сквозная память: если пришли из предыдущего этапа — сохраняем его контекст
+  window._lastContext = (window._journey && window._journey.brainstormContext)
+    ? '\n\n[Контекст из Штурма]\n'+window._journey.brainstormContext
+    : '';
 
+  try{
   if(mode==='brainstorm'){
     // STEP 1 — Interrogation
     document.getElementById('currentRound').textContent='Допрос';
@@ -1775,9 +1815,19 @@ async function launch(){
   } else {
     setFoot('Режим '+mode+' — в разработке');
   }
-
-  running=false;
-  document.getElementById('btnLaunch').style.display='block';
+  }catch(e){
+    removeThinkingBar();
+    setFoot('Ошибка: '+(e.message||e));
+    // Показываем ошибку в ленте чтобы было видно что пошло не так
+    const errDiv=document.createElement('div');
+    errDiv.style.cssText='background:rgba(176,32,48,0.08);border:1px solid var(--red);border-radius:10px;padding:14px;margin:12px 0;color:var(--red);font-size:13px';
+    errDiv.innerHTML='⚠️ Что-то пошло не так: '+escHtmlSafe(e.message||String(e))+'<br><span style="font-size:11px;color:var(--text3)">Нажми «Запустить» снова или «Начать заново».</span>';
+    document.getElementById('chatArea').appendChild(errDiv);
+  }finally{
+    running=false;
+    const bl=document.getElementById('btnLaunch');
+    if(bl) bl.style.display='block';
+  }
 }
 
 // ── Infinite rounds: continue or finish ──
@@ -1828,6 +1878,9 @@ function finishBrainstorm(){
 function resetAll(){
   running=false;
   draftVersions=[];
+  window._journey={};
+  window._askedQuestions=[];
+  window._lastContext='';
   const T=LANG[currentLang]||LANG.ru;
   document.getElementById('chatArea').innerHTML=`<div class="empty-center" id="emptyCenter">
     <div id="emptyIcon" style="text-align:center"><img src="${MAYA_LOGO}" style="width:100px;height:100px;border-radius:22px"/></div>
@@ -1864,7 +1917,21 @@ function exportTree(){
 
 function goToGenesis(){
   window._genTask = window._currentTask || (document.getElementById('taskInput')?document.getElementById('taskInput').value:'');
-  window._genPlan = window._currentDraft || (draftVersions.length?draftVersions[draftVersions.length-1].text:'');
+  const planText = window._currentDraft || (draftVersions.length?draftVersions[draftVersions.length-1].text:'');
+
+  // Сквозная память: собираем весь путь для Навигатора
+  window._journey = window._journey || {};
+  window._journey.architectPlan = planText;
+  window._journey.architectContext = window._lastContext || '';
+
+  // Полный контекст для Навигатора: задача + что обсуждали + план
+  let fullPlan = planText;
+  const allCtx = [window._journey.brainstormContext, window._journey.architectContext].filter(Boolean).join('\n');
+  if(allCtx){
+    fullPlan += '\n\n--- Контекст всего обсуждения (вопросы и ответы) ---\n' + allCtx;
+  }
+  window._genPlan = fullPlan;
+
   switchMode('genesis');
   setTimeout(()=>renderGenesisExits(window._genTask, window._genPlan), 100);
 }
@@ -1873,12 +1940,27 @@ function goToArchitect(){
   const finalText = draftVersions.length ? draftVersions[draftVersions.length-1].text : '';
   window._brainstormResult = finalText;
   window._brainstormTask = document.getElementById('taskInput') ? document.getElementById('taskInput').value : '';
+
+  // Сохраняем весь путь Штурма для сквозной памяти
+  window._journey = window._journey || {};
+  window._journey.brainstormTask = window._currentTask || window._brainstormTask;
+  window._journey.brainstormResult = finalText;
+  window._journey.brainstormQA = (window._askedQuestions||[]).join('\n');
+  window._journey.brainstormContext = window._lastContext || '';
+
   switchMode('architect');
   const ti=document.getElementById('taskInput');
   if(ti && finalText){
-    ti.value = 'Реализовать решение:\n' + finalText.substring(0,500);
+    // Передаём ПОЛНОЕ решение + контекст вопросов/ответов, не обрезаем
+    let carry = 'Реализовать решение:\n' + finalText;
+    if(window._journey.brainstormContext){
+      carry += '\n\n--- Контекст из обсуждения (учитывай, не переспрашивай) ---\n' + window._journey.brainstormContext;
+    }
+    ti.value = carry;
   }
-  setFoot('Финальное решение передано в Архитект');
+  setFoot('Решение и весь контекст переданы в Архитект');
+  // Авто-запуск Архитекта — без лишнего клика
+  setTimeout(()=>{ if(!running) launch(); }, 400);
 }
 
 
@@ -1996,6 +2078,8 @@ function renderPlanBlocks(planText, version){
   const wrap=document.getElementById('planBlocks');
   wrap.style.display='flex';
   wrap.innerHTML='';
+
+  window._currentDraft = planText;
   // Version header
   const vh=document.createElement('div');
   vh.style.cssText='font-size:13px;font-weight:800;color:var(--cyan);padding:4px 0 8px;border-bottom:2px solid var(--cyan);margin-bottom:4px';
@@ -2025,19 +2109,27 @@ function renderPlanBlocks(planText, version){
 }
 
 function offerArchitectFinish(task, plan){
+  // Раунды пройдены — теперь кнопка слева ведёт в Genesis
+  const blG=document.getElementById('btnLaunch');
+  if(blG){
+    blG.textContent='🚀 '+((LANG[currentLang]||LANG.ru).tab_genesis||'Genesis');
+    blG.onclick=()=>goToGenesis();
+    blG.style.display='block';
+  }
   return new Promise(resolve=>{
     const div=document.createElement('div');
     div.id='moreRoundsBox';
-    div.style.cssText='background:#fff;border:2px solid #0A7EC2;border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 4px 16px rgba(10,126,194,0.2)';
-    div.innerHTML='<div style="font-size:13px;font-weight:700;color:#0A7EC2;margin-bottom:8px">🏗 План готов — что дальше?</div>'
-      +'<div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5">Добавь данные о текущем состоянии (что уже есть) и уточни план, или завершай.</div>'
+    div.style.cssText='background:linear-gradient(135deg,#fff,#f0f8ff);border:3px solid #0A7EC2;border-radius:14px;padding:20px;margin:16px 0;box-shadow:0 6px 24px rgba(10,126,194,0.3);animation:pulse-border 2s ease-in-out infinite';
+    div.innerHTML='<style>@keyframes pulse-border{0%,100%{box-shadow:0 6px 24px rgba(10,126,194,0.3)}50%{box-shadow:0 6px 32px rgba(10,126,194,0.55)}}</style>'
+      +'<div style="font-size:15px;font-weight:800;color:#0A7EC2;margin-bottom:6px">🏗 План готов! Выбери что делать дальше ↓</div>'
+      +'<div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5">Можешь уточнить план (добавь что уже есть) — или нажми <b style="color:#0A7A50">✅ Финальный план</b> чтобы завершить и перейти к выходам.</div>'
       +'<textarea id="moreRoundInput" placeholder="Например: завод уже есть, патент готов, нужен только маркетинг и кредит..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;font-family:inherit;outline:none;resize:none;height:60px;color:var(--text);box-sizing:border-box;margin-bottom:12px"></textarea>'
       +'<div style="display:flex;gap:8px">'
-      +'<button onclick="continueArchitect()" style="flex:1;padding:12px;background:#0A7EC2;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">🔄 Уточнить план</button>'
-      +'<button onclick="finishArchitect()" style="flex:1;padding:12px;background:#0A7A50;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">✅ Финальный план</button>'
+      +'<button onclick="continueArchitect()" style="flex:1;padding:14px;background:#0A7EC2;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">🔄 Уточнить план</button>'
+      +'<button onclick="finishArchitect()" style="flex:2;padding:14px;background:#0A7A50;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer">✅ Финальный план →</button>'
       +'</div>';
     document.getElementById('chatArea').appendChild(div);
-    scrollBottom();
+    setTimeout(()=>div.scrollIntoView({behavior:'smooth',block:'center'}),100);
     window._archResolve=resolve;
   });
 }
@@ -2061,25 +2153,24 @@ async function finishArchitect(){
   document.getElementById('moreRoundsBox')?.remove();
   document.getElementById('currentRound').textContent='Синтез финального плана...';
   showThinkingBar('Синтезирую финальный план действий...');
-  const author = agentSlots[0];
+  const authorModelId = getNavigatorModel();
   const task = window._currentTask||'';
   const draft = window._currentDraft||'';
   const allVersions = draftVersions.map(v=>'Версия '+v.version+':\n'+v.text).join('\n\n---\n\n');
   const uctx = window._lastContext ? '\n\nКонтекст от пользователя: '+window._lastContext : '';
   const up = 'Задача: "'+task+'"'+uctx+'\n\nОбсуждение прошло '+draftVersions.length+' версий. Финальный план:\n'+draft+'\n\nСоставь ФИНАЛЬНЫЙ ПЛАН ДЕЙСТВИЙ — чёткий, конкретный, исполнимый. Формат:\n\n## 📋 ЧТО ДЕЛАТЬ — ПЛАН ПО ШАГАМ\n\nДля каждого шага: номер, что делать конкретно, кто отвечает (роль), срок, результат/артефакт.\n\n## ⚠️ КЛЮЧЕВЫЕ РИСКИ И ЗАЩИТА\n\nДля каждого риска: описание риска, вероятность (высокая/средняя/низкая), как защититься.\n\n## 💰 РЕСУРСЫ И БЮДЖЕТ\n\nЧто нужно: деньги, люди, оборудование, время.\n\n## 🚀 ПЕРВЫЕ 3 ШАГА НА ЭТОЙ НЕДЕЛЕ\n\nЧто сделать прямо сейчас чтобы начать.\n\nБудь конкретным. Никакой воды. Это исполнимый план, а не размышления.';
   try{
-    const finalText = await callModel(author.modelId,
+    const finalText = await callModel(authorModelId,
       'Ты архитектор проектов. Финализируешь план. Конкретные шаги, сроки, ответственные. Никакой воды. '+((LANG[currentLang]||LANG.ru).sysSuffix||''),
-      up);
+      up, 2500);
     removeThinkingBar();
     document.getElementById('currentRound').textContent='✓ Готово';
-    // Render final plan prominently
     renderFinalArchitectPlan(task, finalText);
     setFoot('Финальный план готов — версия '+draftVersions.length);
   }catch(e){
     removeThinkingBar();
-    // Fallback: just render last version
-    renderPlanBlocks(draft, draftVersions.length);
+    // Fallback: рендерим последнюю версию НО всё равно меняем кнопку на Genesis
+    renderFinalArchitectPlan(task, draft);
     setFoot('Финальный план готов');
   }
   if(window._archResolve){window._archResolve();window._archResolve=null;}
@@ -2385,7 +2476,7 @@ async function renderGenesisExits(task, plan){
   setFoot('Навигатор работает...');
 
   // Обрезаем план чтобы не переполнить контекст Навигатора
-  const planForNav = plan.length > 3000 ? plan.substring(0, 3000) + '\n\n[...план сокращён для анализа...]' : plan;
+  const planForNav = plan.length > 5000 ? plan.substring(0, 5000) + '\n\n[...сокращено для анализа...]' : plan;
 
   // Промпт для Навигатора — просим JSON с выходами
   const navPrompt = `Ты — Навигатор. Твоя задача: прочитать задачу и финальный план, и определить какие КОНКРЕТНЫЕ выходы (документы, следующие шаги) нужны именно для ЭТОЙ задачи.
@@ -2435,32 +2526,53 @@ ${planForNav}
 
     const hdr2 = document.createElement('div');
     hdr2.style.cssText='font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;padding-bottom:8px;border-bottom:2px solid var(--border)';
-    hdr2.textContent='📋 Навигатор определил выходы для вашей задачи:';
+    hdr2.textContent='📋 Навигатор определил выходы — отметь что нужно:';
     wrap.appendChild(hdr2);
 
-    // Карточки выходов
+    // Кнопка «выбрать всё»
+    const selAll = document.createElement('div');
+    selAll.style.cssText='display:flex;align-items:center;gap:8px;padding:4px 2px;cursor:pointer';
+    selAll.innerHTML=`<input type="checkbox" id="genSelectAll" style="width:17px;height:17px;cursor:pointer;accent-color:var(--cyan)"/>
+      <label for="genSelectAll" style="font-size:12px;font-weight:700;color:var(--cyan);cursor:pointer">Выбрать всё</label>`;
+    wrap.appendChild(selAll);
+
+    // Карточки выходов с чекбоксами
     window._navOutputs = nav.outputs || [];
     (nav.outputs||[]).forEach((ex, idx) => {
-      const card = document.createElement('div');
-      card.style.cssText='background:var(--surface);border:1px solid var(--border);border-left:4px solid '+(ex.color||'var(--cyan)')+';border-radius:10px;padding:12px 14px';
+      const card = document.createElement('label');
+      card.style.cssText='display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--border);border-left:4px solid '+(ex.color||'var(--cyan)')+';border-radius:10px;padding:12px 14px;cursor:pointer';
 
-      const btn = document.createElement('button');
-      btn.style.cssText=`width:100%;padding:8px;background:${ex.color||'var(--cyan)'};color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px`;
-      btn.textContent=(ex.icon||'📄')+' Подготовить →';
-      btn.onclick = () => runGenesisNav(idx);
+      const cb = document.createElement('input');
+      cb.type='checkbox';
+      cb.className='gen-exit-cb';
+      cb.dataset.idx=idx;
+      cb.style.cssText='width:18px;height:18px;cursor:pointer;flex-shrink:0;margin-top:2px;accent-color:'+(ex.color||'var(--cyan)');
 
       const info = document.createElement('div');
-      info.style.cssText='display:flex;align-items:flex-start;gap:10px;margin-bottom:4px';
-      info.innerHTML=`<span style="font-size:22px;flex-shrink:0">${ex.icon||'📄'}</span>
-        <div style="flex:1">
+      info.style.cssText='flex:1';
+      info.innerHTML=`<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">${ex.icon||'📄'}</span>
           <div style="font-size:13px;font-weight:700;color:var(--text)">${escHtmlSafe(ex.title||'')}</div>
-          <div style="font-size:11px;color:var(--text3);line-height:1.4;margin-top:2px">${escHtmlSafe(ex.desc||'')}</div>
-        </div>`;
+        </div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.4;margin-top:4px">${escHtmlSafe(ex.desc||'')}</div>`;
 
+      card.appendChild(cb);
       card.appendChild(info);
-      card.appendChild(btn);
       wrap.appendChild(card);
     });
+
+    // Кнопка «Подготовить выбранное»
+    const prepBtn = document.createElement('button');
+    prepBtn.id='genPrepareBtn';
+    prepBtn.style.cssText='width:100%;padding:13px;background:var(--cyan);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px';
+    prepBtn.textContent='🚀 Подготовить выбранное →';
+    prepBtn.onclick=()=>runGenesisSelected();
+    wrap.appendChild(prepBtn);
+
+    // Логика «выбрать всё»
+    selAll.querySelector('#genSelectAll').onchange=(e)=>{
+      document.querySelectorAll('.gen-exit-cb').forEach(c=>c.checked=e.target.checked);
+    };
 
     // Нерешённые вопросы
     if((nav.open_questions||[]).length > 0){
@@ -2499,6 +2611,96 @@ ${planForNav}
     wrap.appendChild(retryBtn);
     setFoot('Ошибка Навигатора');
   }
+}
+
+// Готовит ВСЕ отмеченные выходы по очереди
+async function runGenesisSelected(){
+  const checked = Array.from(document.querySelectorAll('.gen-exit-cb:checked')).map(c=>parseInt(c.dataset.idx));
+  if(!checked.length){ alert('Отметь хотя бы один выход'); return; }
+  const task = window._genTask||window._currentTask||'';
+  const plan = window._genPlan||window._currentDraft||'';
+  const navModelId = getNavigatorModel();
+  const results = [];
+
+  const btn=document.getElementById('genPrepareBtn');
+  if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
+
+  for(let i=0;i<checked.length;i++){
+    const ex = (window._navOutputs||[])[checked[i]];
+    if(!ex) continue;
+    showThinkingBar(`Готовлю ${i+1}/${checked.length}: ${ex.title}...`);
+    const up = `ЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n"${task}"\n\nФИНАЛЬНЫЙ ПЛАН:\n${plan}\n\n${ex.prompt||''}\n\nПиши конкретно, структурировано, без воды. Используй ## для разделов.`;
+    try{
+      const text = await callModel(navModelId,
+        'Ты эксперт-консультант. Готовишь профессиональные документы. Конкретика, структура, польза.',
+        up, 2000);
+      results.push({title:(ex.icon||'📄')+' '+ex.title, text, filename:ex.filename||'document'});
+    }catch(e){
+      results.push({title:(ex.icon||'📄')+' '+ex.title, text:'⚠️ Ошибка генерации: '+e.message, filename:ex.filename||'document'});
+    }
+  }
+  removeThinkingBar();
+  if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+  renderGenesisMultiResult(results);
+}
+
+// Рендерит несколько готовых документов
+function renderGenesisMultiResult(results){
+  document.getElementById('genesisEmpty').style.display='none';
+  const wrap = document.getElementById('genesisCards');
+  wrap.style.display='flex';
+  wrap.innerHTML='';
+
+  window._genesisAllText = results.map(r=>'# '+r.title+'\n\n'+r.text).join('\n\n---\n\n');
+
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px solid var(--border);margin-bottom:4px';
+  hdr.innerHTML=`<div style="font-size:13px;font-weight:800;color:var(--text)">✅ Готово: ${results.length} ${results.length===1?'документ':'документов'}</div>`;
+  const dlAll=document.createElement('button');
+  dlAll.style.cssText='padding:6px 12px;background:var(--cyan);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer';
+  dlAll.textContent='⬇ Скачать всё';
+  dlAll.onclick=()=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([window._genesisAllText],{type:'text/markdown'}));
+    a.download=makeFileName('maya')+'_все.md';
+    a.click();
+  };
+  hdr.appendChild(dlAll);
+  wrap.appendChild(hdr);
+
+  results.forEach(r=>{
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:4px';
+    const html = r.text.split('\n').filter(p=>p.trim()).map(p=>{
+      if(p.startsWith('## ')) return '<div style="font-size:13px;font-weight:700;color:var(--cyan);margin:10px 0 4px">'+escHtmlSafe(p.replace(/^##\s+/,''))+'</div>';
+      if(p.startsWith('# ')) return '<div style="font-size:14px;font-weight:800;color:var(--text);margin:8px 0">'+escHtmlSafe(p.replace(/^#\s+/,''))+'</div>';
+      return '<p style="font-size:12px;line-height:1.6;color:var(--text2);margin-bottom:5px">'+escHtmlSafe(p)+'</p>';
+    }).join('');
+    card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:800;color:var(--text)">${escHtmlSafe(r.title)}</div>
+      </div>
+      <div style="max-height:300px;overflow-y:auto">${html}</div>`;
+    const dl=document.createElement('button');
+    dl.style.cssText='margin-top:8px;padding:6px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;color:var(--text3);cursor:pointer';
+    dl.textContent='⬇ Скачать этот';
+    dl.onclick=()=>{
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([r.text],{type:'text/markdown'}));
+      a.download=makeFileName('maya')+'_'+(r.filename||'doc')+'.md';
+      a.click();
+    };
+    card.appendChild(dl);
+    wrap.appendChild(card);
+  });
+
+  const back=document.createElement('button');
+  back.style.cssText='width:100%;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;margin-top:4px';
+  back.textContent='← Вернуться к выходам';
+  back.onclick=()=>renderGenesisExits(window._genTask, window._genPlan);
+  wrap.appendChild(back);
+
+  setFoot('Документы готовы');
+  setTimeout(()=>wrap.firstChild?.scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
 
 async function runGenesisNav(idx){
@@ -2586,7 +2788,7 @@ function exportGenesisResult(){
   const text = window._genesisResultText || '';
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text],{type:'text/markdown'}));
-  a.download = (window._genesisFilename||'maya_genesis')+'_'+Date.now()+'.md';
+  a.download = makeFileName('maya')+'_'+(window._genesisFilename||'doc')+'.md';
   a.click();
 }
 
